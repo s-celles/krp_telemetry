@@ -139,20 +139,19 @@
         // Parse the rows segment into an untyped array of arrays.
         const raw_data = d3.csvParseRows(rows);
 
-        let index = Object.keys(meta);
-        ser_head = new dfd.Series(Object.values(meta), { index });
-        ser_units = new dfd.Series(units, { index: headers });
-        df_data = new dfd.DataFrame(raw_data, {
+        const ser_head = new dfd.Series(Object.values(meta), { index: Object.keys(meta) });
+        const ser_units = new dfd.Series(units, { index: headers });
+        const df_data = new dfd.DataFrame(raw_data, {
           columns: headers
         });
         // Calculate Lap number
-        lap = 0;
-        a_laps = Array(df_data.shape[0]).fill(0)
-        laptime = 0;
-        starttime = 0;
-        a_laptimes = [];
+        let lap = 0;
+        const a_laps = Array(df_data.shape[0]).fill(0)
+        let laptime = 0;
+        let starttime = 0;
+        const a_laptimes = [];
         for (let i = 1; i < df_data.shape[0]; i++) {
-          dist_diff = df_data.iloc({
+          let dist_diff = df_data.iloc({
             rows: [i]
           })["Distance"].values[0] - df_data.iloc({
             rows: [i - 1]
@@ -181,7 +180,7 @@
           })
           return col_array;
         }
-        df_laptimes = new dfd.DataFrame(row2col(a_laptimes), {columns: ["Laptime"]});
+        const df_laptimes = new dfd.DataFrame(row2col(a_laptimes), {columns: ["Laptime"]});
         df_laptimes.sortValues("Laptime", { inplace: true })
         df_laptimes.addColumn("Rank", [...Array(df_laptimes.shape[0]).keys()].map(i => i + 1), { inplace: true });
         df_laptimes.sortIndex({ inplace: true });
@@ -199,19 +198,20 @@
       function lap_change(selected_lap) {
         console.log("lap_change(" + selected_lap + ")");
         selected_lap = Number(selected_lap);
-        df_lap = df_data.loc({
+        const df_lap = df_data.loc({
           rows: df_data["Lap"].eq(selected_lap)
         }); // select data from a given lap
         parameters.forEach(function(parameter) {
           let plot = document.getElementById("map_div_" + parameter);
-          colorscale = colorscale_from_parameter(parameter);
-          config = {
+          const colorscale = colorscale_from_parameter(parameter);
+          const config = {
             x: "PosX",
             y: "PosY"
           };
-          trace = {
+          const trace = {
             x: [df_lap[config.x].values],
             y: [df_lap[config.y].values],
+            name: selected_lap,
             marker: {
               colorscale: colorscale,
               color: df_lap[parameter].values  // ToFix
@@ -224,24 +224,24 @@
         });
       }
       function _create_map_laps(laps, plot_id) {
-        data = [];
+        const config = {
+          x: "PosX",
+          y: "PosY"
+        };
+        const layout = {
+          xaxis: {
+            title: config.x,
+          },
+          yaxis: {
+            title: config.y,
+          },
+        };
+        const data = [];
         laps.forEach(function(lap) {
-          df_lap = df_data.loc({
+          const df_lap = df_data.loc({
             rows: df_data["Lap"].eq(lap)
           }); // select data from a given lap
-          config = {
-            x: "PosX",
-            y: "PosY"
-          };
-          layout = {
-            xaxis: {
-              title: config.x,
-            },
-            yaxis: {
-              title: config.y,
-            },
-          };
-          trace = {
+          const trace = {
             x: df_lap[config.x].values,
             y: df_lap[config.y].values,
             type: 'scatter',
@@ -256,22 +256,22 @@
         });
         Plotly.newPlot(plot_id, data, layout, config);
       }
-      function create_map_laps() {
+      function create_map_laps(laps) {
         _create_map_laps(laps, "map_div");
       }
       function calculate_best_lap(ser_laptimes) {
         return ser_laptimes.values.indexOf(ser_laptimes.min());
       }
       function create_map_data_lap(selected_lap, parameter, plot_id) {
-        data = [];
-        df_lap = df_data.loc({
+        const data = [];
+        const df_lap = df_data.loc({
           rows: df_data["Lap"].eq(selected_lap)
         }); // select data from a given lap
-        config = {
+        const config = {
           x: "PosX",
           y: "PosY"
         };
-        layout = {
+        const layout = {
           xaxis: {
             title: config.x,
           },
@@ -279,13 +279,13 @@
             title: config.y,
           },
         };
-        colorscale = colorscale_from_parameter(parameter);
-        trace = {
+        const colorscale = colorscale_from_parameter(parameter);
+        const trace = {
           x: df_lap[config.x].values,
           y: df_lap[config.y].values,
           type: 'scatter',
           mode: 'lines+markers',
-          name: lap,
+          name: selected_lap,
           marker: {
             colorscale: colorscale,
             color: df_lap[parameter].values
@@ -301,60 +301,17 @@
         data.push(trace)
         Plotly.newPlot(plot_id, data, layout, config);
       }
-      function create_maps_data_lap(selected_lap) {
+      function create_maps_data_lap(parameters, selected_lap) {
         parameters.forEach(function(parameter) {
           create_map_data_lap(selected_lap, parameter, "map_div_" + parameter);
         });
       }
-      function create_graph_data(parameter) {
-        data = [];
-          laps.forEach(function(lap) {
-            df_lap = df_data.loc({
-              rows: df_data["Lap"].eq(lap)
-            }); // select data from a given lap
-            config = {
-              x: "Distance",
-              y: parameter
-            };
-            layout = {
-              xaxis: {
-                title: config.x,
-              },
-              yaxis: {
-                title: config.y,
-              },
-            };
-            trace = {
-              x: df_lap[config.x].values,
-              y: df_lap[config.y].values,
-              type: 'scatter',
-              mode: 'lines',
-              name: lap,
-              hovertemplate: 
-              `Lap: ${lap}<br>${config.x}: %{x}<br>${parameter}: %{y}`
-
-            };
-            data.push(trace);
-          });
-          Plotly.newPlot("plot_div_" + parameter, data, layout, config);
-      }
-
-      function create_graphs_data() {
-        parameters.forEach(function(parameter) {
-          create_graph_data(parameter);
-        });
-      }
-
-      function create_barplot_laptimes() {
-        let ser_laptimes = df_laptimes["Laptime"];
-        n_laps = ser_laptimes.shape[0];
-        slice = "1:" + (n_laps - 1);
-        ser_laptimes_without_first_and_last_lap = ser_laptimes.iloc([slice]);
-        config = {
-              x: "Lap",
-              y: "Laptime"
+      function create_graph_data(laps, parameter) {
+        const config = {
+          x: "Distance",
+          y: parameter
         };
-        layout = {
+        const layout = {
           xaxis: {
             title: config.x,
           },
@@ -362,7 +319,49 @@
             title: config.y,
           },
         };
-        trace = {
+        const data = [];
+        laps.forEach(function(lap) {
+          df_lap = df_data.loc({
+            rows: df_data["Lap"].eq(lap)
+          }); // select data from a given lap
+          const trace = {
+            x: df_lap[config.x].values,
+            y: df_lap[config.y].values,
+            type: 'scatter',
+            mode: 'lines',
+            name: lap,
+            hovertemplate: 
+            `Lap: ${lap}<br>${config.x}: %{x}<br>${parameter}: %{y}`
+          };
+          data.push(trace);
+        });
+        Plotly.newPlot("plot_div_" + parameter, data, layout, config);
+      }
+
+      function create_graphs_data(laps, parameters) {
+        parameters.forEach(function(parameter) {
+          create_graph_data(laps, parameter);
+        });
+      }
+
+      function create_barplot_laptimes() {
+        const ser_laptimes = df_laptimes["Laptime"];
+        const n_laps = ser_laptimes.shape[0];
+        const slice = "1:" + (n_laps - 1);
+        const ser_laptimes_without_first_and_last_lap = ser_laptimes.iloc([slice]);
+        const config = {
+              x: "Lap",
+              y: "Laptime"
+        };
+        const layout = {
+          xaxis: {
+            title: config.x,
+          },
+          yaxis: {
+            title: config.y,
+          },
+        };
+        const trace = {
           x: ser_laptimes_without_first_and_last_lap.index,
           y: ser_laptimes_without_first_and_last_lap.values,
           type: 'bar',
@@ -378,7 +377,7 @@
       }
 
       function lap_compare_change(reference, lap) {
-        lap = Number(lap);
+        //lap = Number(lap);
         //console.log(reference, lap);
         update_lap_compare_plots();
       }
@@ -387,29 +386,29 @@
         const data_select = document.getElementById("data_select");
         const lap_select_1 = document.getElementById("lap_select_1");
         const lap_select_2 = document.getElementById("lap_select_2");
-        parameter = data_select.value;
-        lap1 = Number(lap_select_1.value);
-        lap2 = Number(lap_select_2.value);
-        compared_laps = [lap1, lap2];
+        const parameter = data_select.value;
+        const lap1 = Number(lap_select_1.value);
+        const lap2 = Number(lap_select_2.value);
+        const compared_laps = [lap1, lap2];
         _create_map_laps(compared_laps, "map_div_1_2");
-        data = [];
+        const config = {
+          x: "Distance",
+          y: parameter
+        };
+        const layout = {
+          xaxis: {
+            title: config.x,
+          },
+          yaxis: {
+            title: config.y,
+          },
+        };
+        const data = [];
         compared_laps.forEach(function(lap) {
-          df_lap = df_data.loc({
+          const df_lap = df_data.loc({
             rows: df_data["Lap"].eq(lap)
           }); // select data from a given lap
-          config = {
-            x: "Distance",
-            y: parameter
-          };
-          layout = {
-            xaxis: {
-              title: config.x,
-            },
-            yaxis: {
-              title: config.y,
-            },
-          };
-          trace = {
+          const trace = {
             x: df_lap[config.x].values,
             y: df_lap[config.y].values,
             type: 'scatter',
@@ -417,12 +416,10 @@
             name: lap,
             hovertemplate: 
             `Lap: ${lap}<br>${config.x}: %{x}<br>${parameter}: %{y}`
-
           };
           data.push(trace);
         });
         Plotly.newPlot("plot_div_Parameter", data, layout, config);
-
 
         create_map_data_lap(lap1, parameter, "map_div_Parameter1");
         create_map_data_lap(lap2, parameter, "map_div_Parameter2");
@@ -442,7 +439,7 @@
           // #document has its nodes
           parameters = ["Engine", "CylHeadTemp", "WaterTemp", "Gear", "Speed", "LatAcc", "LonAcc", "Steer", "Throttle", "Brake", "FrontBrakes", "Clutch", "YawVel"];
           // https://usefulangle.com/post/193/javascript-read-local-file
-          but_read = document.getElementById("read-button");
+          const but_read = document.getElementById("read-button");
           //document.querySelector("#read-button")
           but_read.addEventListener('click', function() {
             let file = document.querySelector("#file-input").files[0];
@@ -450,6 +447,7 @@
             reader.addEventListener('load', function(e) {
               let text = e.target.result;
               //document.querySelector("#file-contents").textContent = text;
+              //let ser_head, ser_units, df_data, df_laptimes
               [ser_head, ser_units, df_data, df_laptimes] = create_dataframes(text);
               //ser_laptimes = df_laptimes["Laptime"];
               console.log("ser_head");
@@ -460,16 +458,16 @@
               df_data.print();
               console.log(`  shape: ${df_data.shape[0]} x ${df_data.shape[1]}`);
               df_data.ctypes.print();
-              laps = df_data["Lap"].unique().values;
+              const laps = df_data["Lap"].unique().values;
               console.log(`laps: ${laps}`);
               console.log("df_laptimes");
               df_laptimes.print();
-              best_lap = calculate_best_lap(df_laptimes["Laptime"]);
+              const best_lap = calculate_best_lap(df_laptimes["Laptime"]);
               console.log(`best_lap: ${best_lap}`);
 
               //data_head = ser_head.index.map(idx => [idx, ser_head.at(idx)]);
               //data_head = insert_idx_to_array_of_array(data_head);
-              data_head = [...Array(ser_head.shape[0]).keys()].map(i => [i, ser_head.index[i], ser_head.values[i]]);
+              const data_head = [...Array(ser_head.shape[0]).keys()].map(i => [i, ser_head.index[i], ser_head.values[i]]);
               new DataTable('#data-head', {
                 columns: [{
                   title: 'Index',
@@ -482,7 +480,7 @@
                 pageLength: 6,
                 data: data_head
               });
-              data_laptimes = [...Array(df_laptimes["Laptime"].shape[0]).keys()].map(i => [i, df_laptimes["Laptime"].index[i], df_laptimes["Laptime"].values[i]]);
+              const data_laptimes = [...Array(df_laptimes["Laptime"].shape[0]).keys()].map(i => [i, df_laptimes["Laptime"].index[i], df_laptimes["Laptime"].values[i]]);
               new DataTable('#data-laptimes', {
                 columns: [{
                   title: 'Index',
@@ -501,7 +499,7 @@
               });
               //data_units = ser_units.index.map(idx => [idx, ser_units.at(idx)]);
               //data_units = insert_idx_to_array_of_array(data_units);
-              data_units = [...Array(ser_units.shape[0]).keys()].map(i => [i, ser_units.index[i], ser_units.values[i]]);
+              const data_units = [...Array(ser_units.shape[0]).keys()].map(i => [i, ser_units.index[i], ser_units.values[i]]);
               new DataTable('#data-units', {
                 columns: [{
                   title: 'Index',
@@ -514,7 +512,7 @@
                 pageLength: 6,
                 data: data_units
               });
-              columns = []
+              let columns = []
               df_data.columns.forEach(function(column) {
                 columns.push({
                   title: column
@@ -525,7 +523,7 @@
                 pageLength: 100,
                 data: df_data.values
               });
-              data_laptimes_with_rank = [...Array(df_laptimes.shape[0]).keys()].map(i => [i, df_laptimes.index[i], df_laptimes["Laptime"].values[i], df_laptimes["Rank"].values[i]]);
+              const data_laptimes_with_rank = [...Array(df_laptimes.shape[0]).keys()].map(i => [i, df_laptimes.index[i], df_laptimes["Laptime"].values[i], df_laptimes["Rank"].values[i]]);
               new DataTable('#laps-laptimes', {
                 columns: [{
                   title: 'Index',
@@ -547,11 +545,11 @@
               // Add laps to lap_select, lap_select_1 and lap_select_2
               function populate_lap_select(select, selected_lap) {
                 laps.forEach(function(lap) {
-                  opt = document.createElement("option");
+                  let opt = document.createElement("option");
                   opt.value = lap;
                   try {
-                    laptime = df_laptimes["Laptime"].values[lap].toFixed(3);
-                    rank = df_laptimes["Rank"].values[lap]
+                    let laptime = df_laptimes["Laptime"].values[lap].toFixed(3);
+                    let rank = df_laptimes["Rank"].values[lap]
                     opt.text = `${lap} - ${laptime}`;
                     if (rank != 1) {
                       opt.text += ` (${rank})`;
@@ -572,12 +570,12 @@
               populate_lap_select(document.getElementById("lap_select_2"), 0);
 
               //selected_lap = 0;
-              create_map_laps();
-              create_maps_data_lap(best_lap);
-              create_graphs_data();
+              create_map_laps(laps);
+              create_maps_data_lap(parameters, best_lap);
+              create_graphs_data(laps, parameters);
               create_barplot_laptimes();
 
-              function populate_data_select() {
+              function populate_data_select(parameters) {
                 const select = document.getElementById("data_select");
                 parameters.forEach(function(parameter) {
                   opt = document.createElement("option");
