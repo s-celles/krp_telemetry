@@ -174,8 +174,17 @@
         });
         ser_laptimes = new dfd.Series(a_laptimes);
         ser_laptimes.print();
-        console.log(ser_laptimes);
-        df_laptimes = new dfd.DataFrame(ser_laptimes.values);
+        function row2col(row_array) {
+          col_array = []
+          row_array.forEach(function(row) {
+            col_array.push([row])
+          })
+          return col_array;
+        }
+        df_laptimes = new dfd.DataFrame(row2col(a_laptimes), {columns: ["Laptime"]});
+        df_laptimes.sortValues("Laptime", { inplace: true })
+        df_laptimes.addColumn("Rank", [...Array(df_laptimes.shape[0]).keys()].map(i => i + 1), { inplace: true });
+        df_laptimes.sortIndex({ inplace: true });
         df_laptimes.print();
         return [ser_head, ser_units, df_data, ser_laptimes];
       }
