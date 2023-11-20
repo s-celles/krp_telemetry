@@ -207,7 +207,6 @@
           Plotly.restyle(plot, trace);
         });
       }
-
       function create_map_laps() {
         data = [];
         laps.forEach(function(lap) {
@@ -244,9 +243,8 @@
       function calculate_best_lap(ser_laptimes) {
         return ser_laptimes.values.indexOf(ser_laptimes.min());
       }
-      function create_maps_data_lap(selected_lap) {
-        parameters.forEach(function(parameter) {
-          data = [];
+      function create_map_data_lap(selected_lap, parameter) {
+        data = [];
           df_lap = df_data.loc({
             rows: df_data["Lap"].eq(selected_lap)
           }); // select data from a given lap
@@ -287,12 +285,14 @@
           };
           data.push(trace)
           Plotly.newPlot("map_div_" + parameter, data, layout, config);
+      }
+      function create_maps_data_lap(selected_lap) {
+        parameters.forEach(function(parameter) {
+          create_map_data_lap(selected_lap, parameter);
         });
       }
-
-      function create_graphs_data() {
-        parameters.forEach(function(parameter) {
-          data = [];
+      function create_graph_data(parameter) {
+        data = [];
           laps.forEach(function(lap) {
             df_lap = df_data.loc({
               rows: df_data["Lap"].eq(lap)
@@ -322,6 +322,11 @@
             data.push(trace);
           });
           Plotly.newPlot("plot_div_" + parameter, data, layout, config);
+      }
+
+      function create_graphs_data() {
+        parameters.forEach(function(parameter) {
+          create_graph_data(parameter);
         });
       }
 
