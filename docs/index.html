@@ -467,7 +467,7 @@
                 opt = document.createElement("option");
                 opt.value = lap;
                 try {
-                  laptime = ser_laptimes[lap].toFixed(3);
+                  laptime = ser_laptimes.values[lap].toFixed(3);
                   opt.text = `${lap} - ${laptime}`;
                 } catch {
                   opt.text = `${lap}`;
