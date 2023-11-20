@@ -413,50 +413,7 @@
       }
 
       function update_lap_compare_plots() {
-        const data_select = document.getElementById("data_select");
-        const lap_select_1 = document.getElementById("lap_select_1");
-        const lap_select_2 = document.getElementById("lap_select_2");
-        parameter = data_select.value;
-        lap1 = Number(lap_select_1.value);
-        lap2 = Number(lap_select_2.value);
-        // map
-        [lap1, lap2].forEach(function(lap) {
-          df_lap = df_data.loc({
-            rows: df_data["Lap"].eq(lap)
-          }); // select data from a given lap
-          trace = {
-            x: [df_lap[config.x].values],
-            y: [df_lap[config.y].values],
-            marker: {
-            color: df_lap[parameter].values
-          },
-          }
-          if (lap == lap1) {
-            Plotly.restyle("map_div_Parameter1", trace);
-          } else {
-            Plotly.restyle("map_div_Parameter2", trace);
-          }
-        });
-        
-        // plot parameter vs distance
-        /*
-        data = [];
-        [lap1, lap2].forEach(function(lap) {
-          df_lap = df_data.loc({
-            rows: df_data["Lap"].eq(lap)
-          }); // select data from a given lap
-          config = {
-            x: "Distance",
-            y: parameter
-          };
-          trace = {
-            x: df_lap[config.x].values,
-            y: df_lap[config.y].values,
-          };
-          data.push(trace);
-        });
-        Plotly.restyle("plot_div_Parameter", data);
-        */
+        create_lap_compare_plots();
       }
       
       (function(window, document, undefined) {
