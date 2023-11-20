@@ -1,5 +1,5 @@
 # krp_telemetry
-Kart Racing Pro Telemetry Analyser with HTML/CSS/JS (DanfoJS+PlotlyJS)
+Kart Racing Pro Telemetry Analyser with HTML/CSS/JS ([DanfoJS](https://danfo.jsdata.org/)+[PlotlyJS](https://plotly.com/javascript/))
 
 https://scls19fr.github.io/krp_telemetry/
 
