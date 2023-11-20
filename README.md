@@ -5,11 +5,13 @@ https://scls19fr.github.io/krp_telemetry/
 
 ## Screenshots
 
-![laps](screenshots/data.PNG)
+![data](screenshots/data.PNG)
 
-![laps](screenshots/analyse.PNG)
+![analyse](screenshots/analyse.PNG)
 
 ![laps](screenshots/laps.PNG)
+
+![compare](screenshots/compare.PNG)
 
 ### See also others related projects
 - https://github.com/scls19fr/krp_python_telemetry

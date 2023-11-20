@@ -173,6 +173,10 @@
           inplace: true
         });
         ser_laptimes = new dfd.Series(a_laptimes);
+        ser_laptimes.print();
+        console.log(ser_laptimes);
+        df_laptimes = new dfd.DataFrame(ser_laptimes.values);
+        df_laptimes.print();
         return [ser_head, ser_units, df_data, ser_laptimes];
       }
 
@@ -211,7 +215,7 @@
           Plotly.restyle(plot, trace);
         });
       }
-      function create_map_laps() {
+      function _create_map_laps(laps, plot_id) {
         data = [];
         laps.forEach(function(lap) {
           df_lap = df_data.loc({
@@ -242,7 +246,10 @@
           };
           data.push(trace)
         });
-        Plotly.newPlot("map_div", data, layout, config);
+        Plotly.newPlot(plot_id, data, layout, config);
+      }
+      function create_map_laps() {
+        _create_map_laps(laps, "map_div");
       }
       function calculate_best_lap(ser_laptimes) {
         return ser_laptimes.values.indexOf(ser_laptimes.min());
@@ -374,9 +381,10 @@
         parameter = data_select.value;
         lap1 = Number(lap_select_1.value);
         lap2 = Number(lap_select_2.value);
+        compared_laps = [lap1, lap2];
+        _create_map_laps(compared_laps, "map_div_1_2");
         data = [];
-        laps = [lap1, lap2];
-        laps.forEach(function(lap) {
+        compared_laps.forEach(function(lap) {
           df_lap = df_data.loc({
             rows: df_data["Lap"].eq(lap)
           }); // select data from a given lap
@@ -767,11 +775,6 @@
         <section id="Compare" class="tab-panel">
           <h2>Compare laps</h2>
           <div class="container">
-            <label for="data_select">Select data:</label>
-            <select name="data_select" id="data_select" onChange="data_change(this.value);"></select>
-            <br/>
-
-            <div id="map_div_1_2"></div>
 
             <div class="row">
               <div class="col-sm-6">
@@ -783,6 +786,12 @@
                 <select name="lap_select" id="lap_select_2" onChange="lap_compare_change(2, this.value);"></select>
               </div>
             </div>
+
+            <div id="map_div_1_2"></div>
+
+            <label for="data_select">Select data:</label>
+            <select name="data_select" id="data_select" onChange="data_change(this.value);"></select>
+            <br/>
 
             <div class="row">
               <div class="col-sm-6">
