@@ -194,19 +194,17 @@
             y: "PosY"
           };
           trace = {
-            x: df_lap[config.x].values,
-            y: df_lap[config.y].values,
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: lap,
+            x: [df_lap[config.x].values],
+            y: [df_lap[config.y].values],
             marker: {
               colorscale: colorscale,
-              color: df_lap[parameter].values
+              color: df_lap[parameter].values  // ToFix
             }
           };
           //Plotly.deleteTraces(plot, 0);
           //Plotly.restyle(plot, [trace]);
-          Plotly.update(plot, [trace], {}, [0]);
+          //Plotly.update(plot, [trace], {}, [0]);
+          Plotly.restyle(plot, trace);
         });
       }
 
