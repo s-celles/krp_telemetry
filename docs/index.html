@@ -172,8 +172,8 @@
         df_data.addColumn("Lap", a_laps, {
           inplace: true
         });
-        ser_laptimes = new dfd.Series(a_laptimes);
-        ser_laptimes.print();
+        //ser_laptimes = new dfd.Series(a_laptimes);
+        //ser_laptimes.print();
         function row2col(row_array) {
           col_array = []
           row_array.forEach(function(row) {
@@ -185,8 +185,7 @@
         df_laptimes.sortValues("Laptime", { inplace: true })
         df_laptimes.addColumn("Rank", [...Array(df_laptimes.shape[0]).keys()].map(i => i + 1), { inplace: true });
         df_laptimes.sortIndex({ inplace: true });
-        df_laptimes.print();
-        return [ser_head, ser_units, df_data, ser_laptimes];
+        return [ser_head, ser_units, df_data, df_laptimes];
       }
 
       function colorscale_from_parameter(parameter) {
@@ -347,6 +346,7 @@
       }
 
       function create_barplot_laptimes() {
+        let ser_laptimes = df_laptimes["Laptime"];
         n_laps = ser_laptimes.shape[0];
         slice = "1:" + (n_laps - 1);
         ser_laptimes_without_first_and_last_lap = ser_laptimes.iloc([slice]);
@@ -379,7 +379,7 @@
 
       function lap_compare_change(reference, lap) {
         lap = Number(lap);
-        console.log(reference, lap);
+        //console.log(reference, lap);
         update_lap_compare_plots();
       }
 
@@ -450,7 +450,8 @@
             reader.addEventListener('load', function(e) {
               let text = e.target.result;
               //document.querySelector("#file-contents").textContent = text;
-              [ser_head, ser_units, df_data, ser_laptimes] = create_dataframes(text);
+              [ser_head, ser_units, df_data, df_laptimes] = create_dataframes(text);
+              //ser_laptimes = df_laptimes["Laptime"];
               console.log("ser_head");
               ser_head.print()
               console.log("ser_units");
@@ -461,9 +462,9 @@
               df_data.ctypes.print();
               laps = df_data["Lap"].unique().values;
               console.log(`laps: ${laps}`);
-              console.log("ser_laptimes");
-              ser_laptimes.print();
-              best_lap = calculate_best_lap(ser_laptimes);
+              console.log("df_laptimes");
+              df_laptimes.print();
+              best_lap = calculate_best_lap(df_laptimes["Laptime"]);
               console.log(`best_lap: ${best_lap}`);
 
               //data_head = ser_head.index.map(idx => [idx, ser_head.at(idx)]);
@@ -481,7 +482,7 @@
                 pageLength: 6,
                 data: data_head
               });
-              data_laptimes = [...Array(ser_laptimes.shape[0]).keys()].map(i => [i, ser_laptimes.index[i], ser_laptimes.values[i]]);
+              data_laptimes = [...Array(df_laptimes["Laptime"].shape[0]).keys()].map(i => [i, df_laptimes["Laptime"].index[i], df_laptimes["Laptime"].values[i]]);
               new DataTable('#data-laptimes', {
                 columns: [{
                   title: 'Index',
@@ -524,6 +525,7 @@
                 pageLength: 100,
                 data: df_data.values
               });
+              data_laptimes_with_rank = [...Array(df_laptimes.shape[0]).keys()].map(i => [i, df_laptimes.index[i], df_laptimes["Laptime"].values[i], df_laptimes["Rank"].values[i]]);
               new DataTable('#laps-laptimes', {
                 columns: [{
                   title: 'Index',
@@ -532,13 +534,15 @@
                   title: 'Lap'
                 }, {
                   title: 'Laptime'
-                }, ],
+                }, {
+                  title: 'Rank'
+                }],
                 columnDefs: [{
                   targets: 2,
                   render: $.fn.dataTable.render.number(',', '.', 3, '')
                 }],
                 pageLength: 20,
-                data: data_laptimes
+                data: data_laptimes_with_rank
               });
               // Add laps to lap_select, lap_select_1 and lap_select_2
               function populate_lap_select(select, selected_lap) {
@@ -546,9 +550,14 @@
                   opt = document.createElement("option");
                   opt.value = lap;
                   try {
-                    laptime = ser_laptimes.values[lap].toFixed(3);
+                    laptime = df_laptimes["Laptime"].values[lap].toFixed(3);
+                    rank = df_laptimes["Rank"].values[lap]
                     opt.text = `${lap} - ${laptime}`;
-                  } catch {
+                    if (rank != 1) {
+                      opt.text += ` (${rank})`;
+                    }
+                  } catch (error) {
+                    //console.error(error);
                     opt.text = `${lap}`;
                   }
                   if (lap == best_lap) {
