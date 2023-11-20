@@ -176,6 +176,14 @@
         return [ser_head, ser_units, df_data, ser_laptimes];
       }
 
+      function colorscale_from_parameter(parameter) {
+        if (["LatAcc", "LonAcc", "Steer", "YawVel"].includes(parameter)) {
+            return "RdBu";
+          } else {
+            return "YlOrBr";
+          }
+      }
+
       function lap_change(selected_lap) {
         console.log("lap_change(" + selected_lap + ")");
         selected_lap = Number(selected_lap);
@@ -184,11 +192,7 @@
         }); // select data from a given lap
         parameters.forEach(function(parameter) {
           let plot = document.getElementById("map_div_" + parameter);
-          if (["LatAcc", "LonAcc", "Steer", "YawVel"].includes(parameter)) {
-            colorscale = "RdBu";
-          } else {
-            colorscale = "YlOrBr";
-          }
+          colorscale = colorscale_from_parameter(parameter);
           config = {
             x: "PosX",
             y: "PosY"
@@ -243,52 +247,48 @@
       function calculate_best_lap(ser_laptimes) {
         return ser_laptimes.values.indexOf(ser_laptimes.min());
       }
-      function create_map_data_lap(selected_lap, parameter) {
+      function create_map_data_lap(selected_lap, parameter, plot_id) {
         data = [];
-          df_lap = df_data.loc({
-            rows: df_data["Lap"].eq(selected_lap)
-          }); // select data from a given lap
-          config = {
-            x: "PosX",
-            y: "PosY"
-          };
-          layout = {
-            xaxis: {
-              title: config.x,
-            },
-            yaxis: {
-              title: config.y,
-            },
-          };
-          if (["LatAcc", "LonAcc", "Steer", "YawVel"].includes(parameter)) {
-            colorscale = "RdBu";
-          } else {
-            colorscale = "YlOrBr";
+        df_lap = df_data.loc({
+          rows: df_data["Lap"].eq(selected_lap)
+        }); // select data from a given lap
+        config = {
+          x: "PosX",
+          y: "PosY"
+        };
+        layout = {
+          xaxis: {
+            title: config.x,
+          },
+          yaxis: {
+            title: config.y,
+          },
+        };
+        colorscale = colorscale_from_parameter(parameter);
+        trace = {
+          x: df_lap[config.x].values,
+          y: df_lap[config.y].values,
+          type: 'scatter',
+          mode: 'lines+markers',
+          name: lap,
+          marker: {
+            colorscale: colorscale,
+            color: df_lap[parameter].values
+          },
+          text: df_lap["Distance"].values,
+          hovertemplate: 
+            `Lap: ${selected_lap}<br>${config.x}: %{x}<br>${config.y}: %{y}<br>Distance: %{text}<br>${parameter}: %{marker.color}`,
+          colorbar: {
+            x: -.5,
+            len: 0.5
           }
-          trace = {
-            x: df_lap[config.x].values,
-            y: df_lap[config.y].values,
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: lap,
-            marker: {
-              colorscale: colorscale,
-              color: df_lap[parameter].values
-            },
-            text: df_lap["Distance"].values,
-            hovertemplate: 
-              `Lap: ${selected_lap}<br>${config.x}: %{x}<br>${config.y}: %{y}<br>Distance: %{text}<br>${parameter}: %{marker.color}`,
-            colorbar: {
-              x: -.5,
-              len: 0.5
-            }
-          };
-          data.push(trace)
-          Plotly.newPlot("map_div_" + parameter, data, layout, config);
+        };
+        data.push(trace)
+        Plotly.newPlot(plot_id, data, layout, config);
       }
       function create_maps_data_lap(selected_lap) {
         parameters.forEach(function(parameter) {
-          create_map_data_lap(selected_lap, parameter);
+          create_map_data_lap(selected_lap, parameter, "map_div_" + parameter);
         });
       }
       function create_graph_data(parameter) {
@@ -355,6 +355,110 @@
         };
         Plotly.newPlot("barplot_laptimes_div", [trace], layout, config);
       }
+
+      function data_change(parameter) {
+        console.log("parameter:", parameter);
+        update_lap_compare_plots();
+      }
+
+      function lap_compare_change(reference, lap) {
+        lap = Number(lap);
+        console.log(reference, lap);
+        update_lap_compare_plots();
+      }
+
+      function create_lap_compare_plots() {
+        const data_select = document.getElementById("data_select");
+        const lap_select_1 = document.getElementById("lap_select_1");
+        const lap_select_2 = document.getElementById("lap_select_2");
+        parameter = data_select.value;
+        lap1 = Number(lap_select_1.value);
+        lap2 = Number(lap_select_2.value);
+        data = [];
+        laps = [lap1, lap2];
+        laps.forEach(function(lap) {
+          df_lap = df_data.loc({
+            rows: df_data["Lap"].eq(lap)
+          }); // select data from a given lap
+          config = {
+            x: "Distance",
+            y: parameter
+          };
+          layout = {
+            xaxis: {
+              title: config.x,
+            },
+            yaxis: {
+              title: config.y,
+            },
+          };
+          trace = {
+            x: df_lap[config.x].values,
+            y: df_lap[config.y].values,
+            type: 'scatter',
+            mode: 'lines',
+            name: lap,
+            hovertemplate: 
+            `Lap: ${lap}<br>${config.x}: %{x}<br>${parameter}: %{y}`
+
+          };
+          data.push(trace);
+        });
+        Plotly.newPlot("plot_div_Parameter", data, layout, config);
+
+
+        create_map_data_lap(lap1, parameter, "map_div_Parameter1");
+        create_map_data_lap(lap2, parameter, "map_div_Parameter2");
+
+      }
+
+      function update_lap_compare_plots() {
+        const data_select = document.getElementById("data_select");
+        const lap_select_1 = document.getElementById("lap_select_1");
+        const lap_select_2 = document.getElementById("lap_select_2");
+        parameter = data_select.value;
+        lap1 = Number(lap_select_1.value);
+        lap2 = Number(lap_select_2.value);
+        // map
+        [lap1, lap2].forEach(function(lap) {
+          df_lap = df_data.loc({
+            rows: df_data["Lap"].eq(lap)
+          }); // select data from a given lap
+          trace = {
+            x: [df_lap[config.x].values],
+            y: [df_lap[config.y].values],
+            marker: {
+            color: df_lap[parameter].values
+          },
+          }
+          if (lap == lap1) {
+            Plotly.restyle("map_div_Parameter1", trace);
+          } else {
+            Plotly.restyle("map_div_Parameter2", trace);
+          }
+        });
+        
+        // plot parameter vs distance
+        /*
+        data = [];
+        [lap1, lap2].forEach(function(lap) {
+          df_lap = df_data.loc({
+            rows: df_data["Lap"].eq(lap)
+          }); // select data from a given lap
+          config = {
+            x: "Distance",
+            y: parameter
+          };
+          trace = {
+            x: df_lap[config.x].values,
+            y: df_lap[config.y].values,
+          };
+          data.push(trace);
+        });
+        Plotly.restyle("plot_div_Parameter", data);
+        */
+      }
+      
       (function(window, document, undefined) {
         // code that should be taken care of right away
         window.onload = init;
@@ -462,29 +566,46 @@
                 pageLength: 20,
                 data: data_laptimes
               });
-              // Add laps to lap_select
-              const sel = document.getElementById("lap_select");
+              // Add laps to lap_select, lap_select_1 and lap_select_2
+              function populate_lap_select(select, selected_lap) {
+                laps.forEach(function(lap) {
+                  opt = document.createElement("option");
+                  opt.value = lap;
+                  try {
+                    laptime = ser_laptimes.values[lap].toFixed(3);
+                    opt.text = `${lap} - ${laptime}`;
+                  } catch {
+                    opt.text = `${lap}`;
+                  }
+                  if (lap == best_lap) {
+                    opt.text += " (best)";
+                  }
+                  select.add(opt, null);
+                });
+                select.value = selected_lap;
+              }
+              populate_lap_select(document.getElementById("lap_select"), best_lap);
+              populate_lap_select(document.getElementById("lap_select_1"), best_lap);
+              populate_lap_select(document.getElementById("lap_select_2"), 0);
+
               //selected_lap = 0;
-              selected_lap = best_lap;
-              laps.forEach(function(lap) {
-                opt = document.createElement("option");
-                opt.value = lap;
-                try {
-                  laptime = ser_laptimes.values[lap].toFixed(3);
-                  opt.text = `${lap} - ${laptime}`;
-                } catch {
-                  opt.text = `${lap}`;
-                }
-                if (lap == best_lap) {
-                  opt.text += " (best)";
-                }
-                sel.add(opt, null);
-              });
-              sel.value = selected_lap;
               create_map_laps();
-              create_maps_data_lap(selected_lap);
+              create_maps_data_lap(best_lap);
               create_graphs_data();
               create_barplot_laptimes();
+
+              function populate_data_select() {
+                const select = document.getElementById("data_select");
+                parameters.forEach(function(parameter) {
+                  opt = document.createElement("option");
+                  opt.value = parameter;
+                  opt.text = parameter;
+                  select.add(opt, null);
+                });
+                select.value = "Brake";   // parameters[0];
+              }
+              populate_data_select(parameters);
+              create_lap_compare_plots();
             });
             reader.readAsText(file);
           });
@@ -509,6 +630,10 @@
       <!-- Tab 4 -->
       <input type="radio" name="tabset" id="tab4" aria-controls="laps">
       <label for="tab4">Laps</label>
+      <!-- Tab 5 -->
+      <input type="radio" name="tabset" id="tab5" aria-controls="compare">
+      <label for="tab5">Compare</label>
+
       <div class="tab-panels">
         <section id="about" class="tab-panel">
           <h2>About this tool...</h2>
@@ -682,6 +807,38 @@
           </div>
           <div id="barplot_laptimes_div"></div>
         </section>
+        <section id="Compare" class="tab-panel">
+          <h2>Compare laps (WIP)</h2>
+          <div class="container">
+            <label for="data_select">Select data:</label>
+            <select name="data_select" id="data_select" onChange="data_change(this.value);"></select>
+            <br/>
+
+            <div class="row">
+              <div class="col-sm-6">
+                <label for="lap_select">Select a lap:</label>
+                <select name="lap_select" id="lap_select_1" onChange="lap_compare_change(1, this.value);"></select>
+              </div>
+              <div class="col-sm-6">
+                <label for="lap_select">Select a lap:</label>
+                <select name="lap_select" id="lap_select_2" onChange="lap_compare_change(2, this.value);"></select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-sm-6">
+                <div id="map_div_Parameter1"></div>
+              </div>
+              <div class="col-sm-6">
+                <div id="map_div_Parameter2"></div>
+              </div>
+              <div id="plot_div_Parameter"></div>
+            </div>
+          </div>
+
+        </section>
+
+
       </div>
     </div>
   </body>
