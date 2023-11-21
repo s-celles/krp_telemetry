@@ -549,7 +549,7 @@
                   opt.value = lap;
                   try {
                     let laptime = df_laptimes["Laptime"].values[lap].toFixed(3);
-                    let rank = df_laptimes["Rank"].values[lap]
+                    let rank = df_laptimes["Rank"].values[lap];
                     opt.text = `${lap} - ${laptime}`;
                     if (rank != 1) {
                       opt.text += ` (${rank})`;
@@ -587,6 +587,12 @@
               }
               populate_data_select(parameters);
               create_lap_compare_plots();
+
+              // change checked tab when ready
+              const tab1 = document.getElementById("tab1");
+              const tab2 = document.getElementById("tab2");
+              tab1.removeAttribute("checked", "");
+              tab2.setAttribute("checked", "");
             });
             reader.readAsText(file);
           });
