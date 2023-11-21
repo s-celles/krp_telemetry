@@ -444,6 +444,19 @@
           //document.querySelector("#read-button")
           //but_read.addEventListener('click', function() {
           file_input.addEventListener('change', function() {
+            // About tab opened
+            const tab1 = document.getElementById("tab1");
+            const tab2 = document.getElementById("tab2");
+            /*
+            const tab3 = document.getElementById("tab3");
+            const tab4 = document.getElementById("tab4");
+            const tab5 = document.getElementById("tab5");
+            tab1.setAttribute("checked", "");
+            [tab2, tab3, tab4, tab5].forEach(function(tab) {
+              tab.removeAttribute("checked");
+            });
+            */
+            // get file from file input
             let file = document.querySelector("#file-input").files[0];
             let reader = new FileReader();
             reader.addEventListener('load', function(e) {
@@ -613,8 +626,6 @@
               create_lap_compare_plots();
 
               // change checked tab when ready
-              const tab1 = document.getElementById("tab1");
-              const tab2 = document.getElementById("tab2");
               tab1.removeAttribute("checked", "");
               tab2.setAttribute("checked", "");
             });
