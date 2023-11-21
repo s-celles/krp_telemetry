@@ -470,7 +470,13 @@
               //data_head = ser_head.index.map(idx => [idx, ser_head.at(idx)]);
               //data_head = insert_idx_to_array_of_array(data_head);
               const data_head = [...Array(ser_head.shape[0]).keys()].map(i => [i, ser_head.index[i], ser_head.values[i]]);
-              new DataTable('#data-head', {
+              //let data_table = document.getElementById("data-head");
+              //data_table.dataTable().fnDestroy();
+              //new DataTable('#data-head', 
+              if ( $.fn.DataTable.isDataTable("#data-head") ) {
+                $("#data-head").DataTable().destroy();
+              }
+              $("#data-head").DataTable({
                 columns: [{
                   title: 'Index',
                   visible: false
@@ -483,7 +489,11 @@
                 data: data_head
               });
               const data_laptimes = [...Array(df_laptimes["Laptime"].shape[0]).keys()].map(i => [i, df_laptimes["Laptime"].index[i], df_laptimes["Laptime"].values[i]]);
-              new DataTable('#data-laptimes', {
+//              new DataTable('#data-laptimes', {
+              if ( $.fn.DataTable.isDataTable("#data-laptimes") ) {
+                $("#data-laptimes").DataTable().destroy();
+              }
+              $("#data-laptimes").DataTable({
                 columns: [{
                   title: 'Index',
                   visible: false
@@ -502,7 +512,11 @@
               //data_units = ser_units.index.map(idx => [idx, ser_units.at(idx)]);
               //data_units = insert_idx_to_array_of_array(data_units);
               const data_units = [...Array(ser_units.shape[0]).keys()].map(i => [i, ser_units.index[i], ser_units.values[i]]);
-              new DataTable('#data-units', {
+              //new DataTable('#data-units', {
+              if ( $.fn.DataTable.isDataTable("#data-units") ) {
+                $("#data-units").DataTable().destroy();
+              }
+              $("#data-units").DataTable({
                 columns: [{
                   title: 'Index',
                   visible: false
@@ -520,13 +534,21 @@
                   title: column
                 });
               });
-              new DataTable('#data-data', {
+              //new DataTable('#data-data', {
+              if ( $.fn.DataTable.isDataTable("#data-data") ) {
+                $("#data-data").DataTable().destroy();
+              }
+              $("#data-data").DataTable({
                 columns: columns,
                 pageLength: 100,
                 data: df_data.values
               });
               const data_laptimes_with_rank = [...Array(df_laptimes.shape[0]).keys()].map(i => [i, df_laptimes.index[i], df_laptimes["Laptime"].values[i], df_laptimes["Rank"].values[i]]);
-              new DataTable('#laps-laptimes', {
+              //new DataTable('#laps-laptimes', {
+              if ( $.fn.DataTable.isDataTable("#laps-laptimes") ) {
+                $("#laps-laptimes").DataTable().destroy();
+              }
+              $("#laps-laptimes").DataTable({
                 columns: [{
                   title: 'Index',
                   visible: false
