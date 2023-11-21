@@ -194,35 +194,6 @@
             return "YlOrBr";
           }
       }
-
-      function lap_change(selected_lap) {
-        console.log("lap_change(" + selected_lap + ")");
-        selected_lap = Number(selected_lap);
-        const df_lap = df_data.loc({
-          rows: df_data["Lap"].eq(selected_lap)
-        }); // select data from a given lap
-        parameters.forEach(function(parameter) {
-          let plot = document.getElementById("map_div_" + parameter);
-          const colorscale = colorscale_from_parameter(parameter);
-          const config = {
-            x: "PosX",
-            y: "PosY"
-          };
-          const trace = {
-            x: [df_lap[config.x].values],
-            y: [df_lap[config.y].values],
-            name: selected_lap,
-            marker: {
-              colorscale: colorscale,
-              color: df_lap[parameter].values  // ToFix
-            }
-          };
-          //Plotly.deleteTraces(plot, 0);
-          //Plotly.restyle(plot, [trace]);
-          //Plotly.update(plot, [trace], {}, [0]);
-          Plotly.restyle(plot, trace);
-        });
-      }
       function _create_map_laps(laps, plot_id) {
         const config = {
           x: "PosX",
@@ -304,6 +275,37 @@
       function create_maps_data_lap(parameters, selected_lap) {
         parameters.forEach(function(parameter) {
           create_map_data_lap(selected_lap, parameter, "map_div_" + parameter);
+        });
+      }
+      function lap_change(selected_lap) {
+        console.log("lap_change(" + selected_lap + ")");
+        selected_lap = Number(selected_lap);
+        const df_lap = df_data.loc({
+          rows: df_data["Lap"].eq(selected_lap)
+        }); // select data from a given lap
+        parameters.forEach(function(parameter) {
+          let plot = document.getElementById("map_div_" + parameter);
+          const colorscale = colorscale_from_parameter(parameter);
+          const config = {
+            x: "PosX",
+            y: "PosY"
+          };
+          const trace = {
+            x: [df_lap[config.x].values],
+            y: [df_lap[config.y].values],
+            name: selected_lap,
+            marker: {
+              colorscale: colorscale,
+              color: df_lap[parameter].values  // ToFix
+            },
+            text: [df_lap["Distance"].values],
+            hovertemplate: 
+            `Lap: ${selected_lap}<br>${config.x}: %{x}<br>${config.y}: %{y}<br>Distance: %{text}<br>${parameter}: %{marker.color}`,
+          };
+          //Plotly.deleteTraces(plot, 0);
+          //Plotly.restyle(plot, [trace]);
+          //Plotly.update(plot, [trace], {}, [0]);
+          Plotly.restyle(plot, trace);
         });
       }
       function create_graph_data(laps, parameter) {
