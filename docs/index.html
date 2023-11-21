@@ -439,9 +439,11 @@
           // #document has its nodes
           parameters = ["Engine", "CylHeadTemp", "WaterTemp", "Gear", "Speed", "LatAcc", "LonAcc", "Steer", "Throttle", "Brake", "FrontBrakes", "Clutch", "YawVel"];
           // https://usefulangle.com/post/193/javascript-read-local-file
-          const but_read = document.getElementById("read-button");
+          //const but_read = document.getElementById("read-button");
+          const file_input = document.getElementById("file-input");
           //document.querySelector("#read-button")
-          but_read.addEventListener('click', function() {
+          //but_read.addEventListener('click', function() {
+          file_input.addEventListener('change', function() {
             let file = document.querySelector("#file-input").files[0];
             let reader = new FileReader();
             reader.addEventListener('load', function(e) {
@@ -602,7 +604,7 @@
     <h1>Kart Racing Pro Telemetry Analyser</h1>
     <label for="file">Open Kart Racing Pro Telemetry File</label>
     <input type="file" id="file-input" accept=".csv" />
-    <button id="read-button">Read File</button>
+    <!-- <button id="read-button">Read File</button> -->
     <pre id="file-contents"></pre>
     <div class="tabset">
       <!-- Tab 1 -->
@@ -629,7 +631,7 @@
           <ul>
             <li>press "Choose a file" next to "Open Kart Racing Pro Telemetry File"</li>
             <li>select the file created by Kart Racing Pro (usualy named <code>Logdata.csv</code>).</li>
-            <li>and then click "Read file"</li>
+            <!-- <li>and then click "Read file" button</li> -->
           </ul>
             You don't own KRP? Use this <a href="https://raw.githubusercontent.com/scls19fr/krp_python_telemetry/main/Logdata%20Essay%20short%20mini60%202023-11-19.csv">sample file</a>. <br /> The tabs are: 
           <ul>
