@@ -14,5 +14,5 @@ https://s-celles.github.io/krp_telemetry/
 ![compare](screenshots/compare.PNG)
 
 ### See also others related projects
-- https://github.com/scls19fr/krp_python_telemetry
+- https://github.com/s-celles/krp_python_telemetry
 - https://github.com/flautrup/KaRTA
